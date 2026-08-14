@@ -49,8 +49,15 @@ const CLIENT_EXTERNALS: readonly string[] = [
  * surfaces with no shared runtime identity. Everything else under
  * @deepseek-ai/* is either a module-table entry (external) or a leak the
  * purity gate rejects.
+ *
+ * `dsh-tools` was previously listed here, but it is NOT shared-identity-free:
+ * it owns module-level `Symbol`s (`TOOL_RUNTIME_SCHEDULER` in code-mode.js)
+ * whose identity the host ToolRuntime registry keys on. Inlining it gives the
+ * bundle a second, unequal Symbol; the run_code bridge then reads the host
+ * registry under the wrong key and crashes with
+ * `Cannot read properties of undefined (reading 'prepare')`.
  */
-const INLINE_SAFE = /^@deepseek-ai\/dsh-(host-apiproxy|session|llm|tools|brand)(\/|$)/
+const INLINE_SAFE = /^@deepseek-ai\/dsh-(host-apiproxy|session|llm|brand)(\/|$)/
 
 /** Generated descriptor/codec contribution with no shared runtime identity. */
 const GENERATED_REMOTE = /^@deepseek-ai\/dsh-[a-z0-9]+(?:-[a-z0-9]+)*\/remote$/
@@ -76,6 +83,16 @@ export function clientBundle(id: string, libEntry: readonly string[]): UserConfi
     fixedExtension: false,
     dts: false,
     clean: false,
+    // `@deepseek-ai/*` modules must stay external in the node half. Bundling
+    // them in (dsh-tools in particular) re-instantiates their module-level
+    // `Symbol`s, e.g. `TOOL_RUNTIME_SCHEDULER` — a fresh Symbol per bundle.
+    // When the plugin then reads the host ToolRuntime registry it looks up a
+    // different key than the one the host wrote, gets `undefined`, and any
+    // tool dispatch through the run_code bridge crashes with
+    // `Cannot read properties of undefined (reading 'prepare')`.
+    // The host harness provides these modules, so importing them at runtime
+    // shares the exact same Symbol identity.
+    external: [/^@deepseek-ai\//],
   }, clientConfig(id)]
 }
 
