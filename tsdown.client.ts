@@ -76,6 +76,10 @@ export function clientBundle(id: string, libEntry: readonly string[]): UserConfi
     fixedExtension: false,
     dts: false,
     clean: false,
+    // dsh-tools 必须外置：内联会把整套运行时（含第二个 ToolRuntime 与第二个
+    // TOOL_RUNTIME_SCHEDULER Symbol）打进 lib，与宿主运行时冲突；外置后 lib
+    // 通过 peer 依赖解析到宿主同一份运行时。
+    external: ['@deepseek-ai/dsh-tools'],
   }, clientConfig(id)]
 }
 
