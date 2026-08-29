@@ -4,8 +4,8 @@
  * @module dsh-context-doctor/client/store
  */
 
-import { defineStore } from '@deepseek-ai/dsh-client-runtime/client'
-import type { EngineStoreHandle } from '@deepseek-ai/dsh-client-runtime/client'
+import { defineStore } from '@deepseek-ai/dsh-client-store'
+import type { EngineStoreHandle } from '@deepseek-ai/dsh-client-store'
 import type { AuditReport } from '../audit.ts'
 
 /** Audit UI state as consumers see it. */

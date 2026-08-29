@@ -4,7 +4,7 @@
  * `/api/context-doctor/audit` endpoint: fetch on mount, manual refresh.
  * @module dsh-context-doctor/client
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client';
+import type { Context as ClientContext } from '@deepseek-ai/cordis';
 /** Required services. */
 export declare const inject: string[];
 export type { ContextAuditRingProps } from './ContextAuditRing.tsx';

@@ -3,7 +3,7 @@
  * written only through the store's actions. Components only read snapshots.
  * @module dsh-context-doctor/client/store
  */
-import type { EngineStoreHandle } from '@deepseek-ai/dsh-client-runtime/client';
+import type { EngineStoreHandle } from '@deepseek-ai/dsh-client-store';
 import type { AuditReport } from '../audit.ts';
 /** Audit UI state as consumers see it. */
 export interface AuditUiState {
