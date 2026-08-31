@@ -37,23 +37,23 @@ export function apply(ctx: Context, config: Config = {}): void {
   ctx.tools.register(defineTool({
     name: 'context_audit',
     description:
-      '审计当前会话的上下文注入物：AGENTS.md/CLAUDE.md 指令链、技能目录摘要（catalog）、工具 schema、MCP 工具。'
-      + '估算每项注入的 token 成本，检测跨文件重复段落、技能描述重复、同名技能 shadow、MCP 工具面膨胀，'
-      + '输出按严重度排序的裁剪建议。只读，不修改任何文件。',
+      'Audit the context injections of the current session: the AGENTS.md/CLAUDE.md instruction chain, skill catalog summaries, tool schemas, and MCP tools.'
+      + 'Estimate the token cost of each injection, detect cross-file duplicate blocks, duplicate skill descriptions, same-name skill shadowing, and MCP tool surface bloat,'
+      + 'and output pruning suggestions sorted by severity. Read-only; does not modify any files.',
     parameters: {
-      cwd: { type: 'string', description: '审计起点目录；默认使用当前会话工作目录' },
+      cwd: { type: 'string', description: 'Directory to audit; defaults to the current session working directory' },
       includeSkillBodies: {
         type: 'boolean',
-        description: '是否统计技能正文的总 token（需要逐个加载技能正文，较慢）；默认 false',
+        description: 'Whether to count the total tokens of skill bodies (loads each skill body, slower); default false',
       },
       maxSkillBodies: {
         type: 'number',
-        description: 'includeSkillBodies 时最多统计的技能个数；默认 20',
+        description: 'Maximum number of skill bodies to count when includeSkillBodies is enabled; default 20',
       },
       detail: {
         type: 'string',
         enum: ['summary', 'developer'],
-        description: '输出层级：summary 为精简摘要；developer 额外附带可定位的 context-audit receipt',
+        description: 'Output level: summary is a condensed overview; developer also includes an addressable context-audit receipt',
       },
     },
     output: {
