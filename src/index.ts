@@ -85,11 +85,16 @@ export function apply(ctx: Context, config: Config = {}): void {
   // 2. HTTP 路由（浏览器圆环面板的数据通道）。webServer 是可选能力：
   //    有 web 服务时注册（浏览器半区数据源），headless/CLI 环境没有该服务
   //    时自动跳过，context_audit 工具不受影响。
-  // sessions 是可选的（headless 无），用 ctx.get 读取、缺省则不传。
+  // sessions / agents 都是可选的（headless 无），用 ctx.get 读取、缺省则不传。
+  // agents 用来把 `session=<id>` 还原成 agent —— 技能查询的 scope key，缺了它
+  // 面板里的技能目录会恒为 0（issue #8）。sessionId 是 agent 注册表与会话日志
+  // 共用的同一个身份，所以同一个 id 两边都能查。
   const sessions = ctx.get('sessions')
+  const agents = ctx.get('agents')
   const routes = makeAuditRoutes({
     deps,
     ...(sessions !== undefined ? { sessions: sessions as never } : {}),
+    ...(agents !== undefined ? { agents: agents as never } : {}),
     ...(config.defaultCwd !== undefined ? { defaultCwd: config.defaultCwd } : {}),
     ...(config.cacheTtlMs !== undefined ? { cacheTtlMs: config.cacheTtlMs } : {}),
   })

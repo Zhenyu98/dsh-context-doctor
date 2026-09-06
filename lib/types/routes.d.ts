@@ -17,6 +17,14 @@ export interface AuditRoutesConfig {
             };
         } | undefined;
     };
+    /**
+     * Agent 注册表：`session=<id>` 参数存在时用它还原调用方 agent。agent 即技能
+     * 查询的 scope key，没有它宿主「只读 global 层」，面板的技能目录恒为 0
+     * （issue #8）。sessionId 是 agent 注册表与会话日志共用的同一个身份。
+     */
+    agents?: {
+        get(id: string): object | undefined;
+    };
     /** 默认审计目录（cwd/session 参数都缺省时使用）。 */
     defaultCwd?: string;
     /** 结果缓存时长（毫秒）。默认 60s。 */

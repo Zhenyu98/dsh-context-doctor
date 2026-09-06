@@ -69,7 +69,16 @@ export async function scanInstructionChain(
   layers.reverse()
 
   // 3. 逐层读指令文件
+  //
+  // 去重是必须的，否则报告会和模型实际看到的对不上（issue #8）。宿主的注入链
+  // 本身就去重：同一个文件命中两次只注入一份，`AGENTS.md` 与 `CLAUDE.md` 内容
+  // 相同时也只注入一份。这里对齐两条：
+  //   - 真实路径去重：`fs.resolve` 跟随符号链接，`CLAUDE.md -> AGENTS.md`
+  //     这种布局（deepseek-harness 仓库根目录就是）会把同一个物理文件算两次，
+  //     token 翻倍，还产生「自己和自己重复」的假重复块；
+  //   - 内容去重：两个各自独立、内容逐字节相同的文件同理只算一份。
   const rawFiles: { path: string; bytes: number; tokens: number; content: string }[] = []
+  const seenPaths = new Set<string>()
   for (const dir of layers) {
     for (const name of INSTRUCTION_NAMES) {
       const fullPath = join(dir, name)
@@ -79,6 +88,9 @@ export async function scanInstructionChain(
       } catch {
         continue // 不存在 / 不可解析
       }
+      // 符号链接在 resolve 后归一到同一真实路径，据此判重。
+      const realPath = fs.processPath(target)
+      if (seenPaths.has(realPath)) continue
       let info
       try {
         info = await fs.stat(target, signal)
@@ -93,8 +105,14 @@ export async function scanInstructionChain(
       } catch {
         continue
       }
+      // 内容逐字节相同的另一个文件：宿主同样只注入一份。
+      if (rawFiles.some((file) => file.content === text)) {
+        seenPaths.add(realPath)
+        continue
+      }
+      seenPaths.add(realPath)
       rawFiles.push({
-        path: fs.processPath(target),
+        path: realPath,
         bytes: info.size ?? Buffer.byteLength(text),
         tokens: estimateTokens(text),
         content: text,

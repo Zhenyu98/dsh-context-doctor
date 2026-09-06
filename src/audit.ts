@@ -104,8 +104,18 @@ export async function runAudit(deps: AuditDeps, options: AuditOptions): Promise<
   const { fs, skills, tools } = deps
   const { cwd, signal } = options
 
+  // 技能查询必须带 scope。宿主 SkillViewOptions 写明「omitted reads the global
+  // layer alone」，而技能实际注册在调用方所在的 project / runtime / user 层，
+  // 不传 scope 时 catalog 恒为空（issue #8）。宿主自己的 tool-skill 就是这个
+  // 写法：agent 本身即 scope key。
+  const skillLookup = {
+    cwd,
+    signal,
+    ...(typeof options.agent === 'object' && options.agent !== null ? { scope: options.agent } : {}),
+  }
+
   // skills.list 只调一次：技能目录统计与冲突检测共用同一份列表。
-  const skillList = await skills.list({ cwd, signal })
+  const skillList = await skills.list(skillLookup)
 
   const [instructions, skillCatalog, toolSchemas] = await Promise.all([
     scanInstructionChain(fs, cwd, signal),
@@ -121,7 +131,7 @@ export async function runAudit(deps: AuditDeps, options: AuditOptions): Promise<
     let totalTokens = 0
     for (const summary of skillList.slice(0, max)) {
       try {
-        const def = await skills.get(summary.name, { cwd, signal })
+        const def = await skills.get(summary.name, skillLookup)
         if (def !== undefined) {
           count++
           totalTokens += estimateTokens(def.content)

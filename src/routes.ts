@@ -19,6 +19,12 @@ export interface AuditRoutesConfig {
    * 缺省时回退 defaultCwd / process.cwd()。
    */
   sessions?: { get(id: string): { header: { cwd?: string } } | undefined }
+  /**
+   * Agent 注册表：`session=<id>` 参数存在时用它还原调用方 agent。agent 即技能
+   * 查询的 scope key，没有它宿主「只读 global 层」，面板的技能目录恒为 0
+   * （issue #8）。sessionId 是 agent 注册表与会话日志共用的同一个身份。
+   */
+  agents?: { get(id: string): object | undefined }
   /** 默认审计目录（cwd/session 参数都缺省时使用）。 */
   defaultCwd?: string
   /** 结果缓存时长（毫秒）。默认 60s。 */
@@ -69,16 +75,27 @@ export function makeAuditRoutes(config: AuditRoutesConfig): WebRoute[] {
   /** 缓存条目上限：防止不同 cwd 参数让缓存无限增长（超限时淘汰最旧条目）。 */
   const MAX_CACHE_ENTRIES = 32
 
-  const audit = (cwd: string, detail: 'summary' | 'developer'): Promise<AuditReport> => {
-    // 两种明细层级的报告结构不同，缓存必须分开存放。
-    const key = `${detail} ${cwd}`
+  const audit = (
+    cwd: string,
+    detail: 'summary' | 'developer',
+    agent: object | undefined,
+    sessionId: string,
+  ): Promise<AuditReport> => {
+    // 缓存键要带上明细层级（两种报告结构不同）和会话（不同 agent 看到的技能层
+    // 不同，报告也就不同）。
+    const key = `${detail} ${sessionId} ${cwd}`
     const hit = cache.get(key)
     if (hit !== undefined && Date.now() - hit.at < cacheTtlMs) return hit.promise
     if (cache.size >= MAX_CACHE_ENTRIES) {
       const oldest = cache.keys().next().value
       if (oldest !== undefined) cache.delete(oldest)
     }
-    const promise = runAudit(deps, { cwd, detail, signal: new AbortController().signal })
+    const promise = runAudit(deps, {
+      cwd,
+      detail,
+      signal: new AbortController().signal,
+      ...(agent !== undefined ? { agent } : {}),
+    })
       .catch((error: unknown) => {
         // 失败不缓存，允许下次重试
         cache.delete(key)
@@ -96,10 +113,15 @@ export function makeAuditRoutes(config: AuditRoutesConfig): WebRoute[] {
         json(res, 405, { ok: false, error: 'method-not-allowed' })
         return
       }
-      const cwd = resolveCwd(req.url ?? '', config)
+      const url = req.url ?? ''
+      const cwd = resolveCwd(url, config)
       // `detail=developer` 附带逐条 receipt，浏览器面板用它展开「谁在占用」。
-      const detail = parseQueryParam(req.url ?? '', 'detail') === 'developer' ? 'developer' : 'summary'
-      audit(cwd, detail).then(
+      const detail = parseQueryParam(url, 'detail') === 'developer' ? 'developer' : 'summary'
+      // agent 是技能查询的 scope key；解析不到时退化为不带 scope 的旧行为
+      // （技能目录会是空的），但其余各项照常统计。
+      const sessionId = parseQueryParam(url, 'session') ?? ''
+      const agent = sessionId === '' ? undefined : config.agents?.get(sessionId)
+      audit(cwd, detail, agent, sessionId).then(
         (report) => json(res, 200, { ok: true, report }),
         (error: unknown) => json(res, 500, {
           ok: false,

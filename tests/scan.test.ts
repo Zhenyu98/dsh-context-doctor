@@ -100,3 +100,66 @@ test('scanInstructionChain: 无 .git 时以 cwd 为根', async () => {
     rmSync(dir, { recursive: true, force: true })
   }
 })
+
+test('scanInstructionChain: 符号链接指向同一物理文件时只算一次（issue #8）', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ctxdoc-link-'))
+  try {
+    const repo = join(dir, 'repo')
+    mkdirSync(join(repo, '.git'), { recursive: true })
+    const body = '# 规则\n这段内容要够长才能进入重复块检测，凑够四十个字符以上，这里多写一些字。\n'
+    writeFileSync(join(repo, 'AGENTS.md'), body)
+
+    // CLAUDE.md 是 AGENTS.md 的符号链接：resolve 后归一到同一 targetKey，
+    // 正是 deepseek-harness 仓库根目录的布局。
+    const real = join(repo, 'AGENTS.md')
+    const linkedFs = {
+      async resolve(path: string): Promise<unknown> {
+        const abs = resolve(path)
+        return { targetKey: abs.endsWith('CLAUDE.md') ? real : abs }
+      },
+      processPath(target: { targetKey: string }): string {
+        return target.targetKey
+      },
+      async stat(target: { targetKey: string }): Promise<unknown> {
+        try {
+          const st = statSync(target.targetKey)
+          return { version: 1, type: st.isDirectory() ? 'directory' : 'file', size: st.size }
+        } catch {
+          return undefined
+        }
+      },
+      async readText(target: { targetKey: string }): Promise<string> {
+        return readFileSync(target.targetKey, 'utf8')
+      },
+    } as unknown as FileSystem
+
+    const result = await scanInstructionChain(linkedFs, repo, new AbortController().signal)
+
+    assert.equal(result.files.length, 1, '同一物理文件只应计一次')
+    assert.equal(result.files[0]!.path, real)
+    // token 不能翻倍，重复块也不能出现「自己和自己重复」
+    assert.equal(result.totalTokens, result.files[0]!.tokens)
+    assert.deepEqual(result.duplicateBlocks, [], '同一文件自比不应产生重复块')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('scanInstructionChain: 两个独立文件内容逐字节相同时只算一次（issue #8）', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'ctxdoc-same-'))
+  try {
+    const repo = join(dir, 'repo')
+    mkdirSync(join(repo, '.git'), { recursive: true })
+    const body = '# 同样的内容\n宿主的注入链在两份内容相同时只注入一份，审计要对齐这个行为才不会虚高。\n'
+    writeFileSync(join(repo, 'AGENTS.md'), body)
+    writeFileSync(join(repo, 'CLAUDE.md'), body)
+
+    const result = await scanInstructionChain(fakeFs(), repo, new AbortController().signal)
+
+    assert.equal(result.files.length, 1, '内容相同只应计一次')
+    assert.equal(result.totalTokens, result.files[0]!.tokens)
+    assert.deepEqual(result.duplicateBlocks, [])
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
