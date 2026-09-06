@@ -32,11 +32,16 @@ const CSS_VIRTUAL_SUFFIX = '.mjs'
 /**
  * Externals resolved from the loader module table: the shared browser
  * platform modules the shell seeds, mirroring the checkout's
- * `packages/client/web/src/platform.ts` — its `PLATFORM_MODULES` plus the
- * `PRELOADED_CLIENT_EXTERNALS` runtime-store exemption. Anything else is
- * inlined into the bundle. Kept in sync with DSH 0.1.0-rc.8, which dropped
- * `dsh-client-web-react`, `dsh-client-ui-attachment`, and
- * `dsh-client-schema-form` from the seed table.
+ * `packages/client/web/src/platform.ts` `PLATFORM_MODULES`. Anything else is
+ * inlined into the bundle.
+ *
+ * This list is a hard dependency on one harness generation and must be
+ * re-checked on every DSH upgrade. 0.1.2 replaced the `dsh-client-runtime`
+ * seed with `dsh-client-store`; a bundle still emitting
+ * `require("@deepseek-ai/dsh-client-runtime/client")` gets "missed the module
+ * table" and takes the whole web shell down with it, not just this plugin
+ * (issues #9 / #13). Tracks DSH 0.1.2-rc.1, verified against master
+ * (0.1.3-alpha.1), which seeds the same set.
  */
 const CLIENT_EXTERNALS: readonly string[] = [
   'react', 'react/jsx-runtime', 'react-dom', 'react-dom/client', '@deepseek-ai/cordis',

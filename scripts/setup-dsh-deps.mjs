@@ -33,6 +33,8 @@ const LINKS = {  'node_modules/@deepseek-ai/cordis': 'vendor/cordis',
   'node_modules/@deepseek-ai/dsh-agent': 'packages/core/agent',
   'node_modules/@deepseek-ai/dsh-brand': 'packages/util/brand',
   'node_modules/@deepseek-ai/dsh-tools': 'packages/core/tools',
+  // 0.1.2 起 JsonValue 从 dsh-tools 移出到这里（仅类型引用）。
+  'node_modules/@deepseek-ai/dsh-util-values': 'packages/util/values',
   'node_modules/@deepseek-ai/dsh-fs': 'packages/fs/fs',
   'node_modules/@deepseek-ai/dsh-skill': 'packages/skill/skill',
   'node_modules/@deepseek-ai/dsh-host-webserver': 'packages/host/webserver',

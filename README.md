@@ -12,7 +12,7 @@
 
 <p align="center">
   <a href="LICENSE"><img alt="License BSD-3-Clause" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg?style=for-the-badge"></a>
-  <a href="https://github.com/Zhenyu98/dsh-context-doctor/releases"><img alt="Version 0.6.1" src="https://img.shields.io/badge/Version-0.6.1-green.svg?style=for-the-badge"></a>
+  <a href="https://github.com/Zhenyu98/dsh-context-doctor/releases"><img alt="Version 0.6.2" src="https://img.shields.io/badge/Version-0.6.2-green.svg?style=for-the-badge"></a>
   <a href="https://github.com/deepseek-ai/awesome-deepseek-agent"><img alt="For DeepSeek Harness" src="https://img.shields.io/badge/For-DeepSeek%20Harness-8257D0.svg?style=for-the-badge"></a>
 </p>
 
@@ -47,7 +47,7 @@ DSH 会话里，模型每个请求都自动携带一批注入物：层层叠加�
 
 ## Quick Start
 
-> **宿主版本要求**：DSH `>= 0.1.0-rc.6`（含 0.1.1-rc 线；已对 0.1.1-rc.2 验证）。`@deepseek-ai/cordis` 与 `@deepseek-ai/dsh-tools` 是 peer 依赖，由宿主 profile 提供；插件不自带这两份运行时（自带会铸造第二个工具调度器，见 [#2](https://github.com/Zhenyu98/dsh-context-doctor/issues/2)）。
+> **宿主版本要求**：DSH `>= 0.1.2-rc.1`（已对 0.1.2-rc.1 验证）。0.1.2 重排了客户端模块表（`dsh-client-runtime` 换成 `dsh-client-store`），旧版宿主请固定 [`v0.6.1`](https://github.com/Zhenyu98/dsh-context-doctor/releases/tag/v0.6.1) —— 版本错配会让**整个 web shell** 起不来，不只是本插件（见 [#9](https://github.com/Zhenyu98/dsh-context-doctor/issues/9)）。`@deepseek-ai/cordis` 与 `@deepseek-ai/dsh-tools` 是 peer 依赖，由宿主 profile 提供；插件不自带这两份运行时（自带会铸造第二个工具调度器，见 [#2](https://github.com/Zhenyu98/dsh-context-doctor/issues/2)）。
 
 ```sh
 # 1. 安装（官方 bundle 插件机制；构建产物已入库，git 源安装无需构建）
@@ -88,7 +88,7 @@ dsh --profile web --dump-config | grep context-doctor
 
 ### 两种形态
 
-1. **Web UI `Context Doctor` 面板**（已有会话的发送按钮左侧，与内置计量条并列）：顶部一条预算轨把 10k / 30k 两个阈值直接画成刻度——离警戒线还有多远是看得见的，不再是隐含规则；轨内按互不重叠的四项（指令链 / 技能目录 / 内置工具 schema / MCP 工具）着色分段。每项可展开到具体条目——指令链逐文件、技能按来源、工具按单个 schema、MCP 按服务器——直接回答「谁在占用」。面板文案跟随 DSH 的语言设置（中 / 英），点击面板外任意处即收起。界面使用轻量等宽字体、低饱和语义色、英文指标和建议卡片；点击后展开 `Instruction chain` / `Skills catalog` / `Tool schemas` / `MCP tools` 明细与手动刷新。面板自动跟随 DSH 的浅色、深色与系统主题，并会在窄视窗内滚动以保持完整可用。数据经 `GET /api/context-doctor/audit`（host 侧 60s 缓存）拉取。
+1. **Web UI `Context Doctor` 面板**（已有会话的发送按钮左侧，与内置计量条并列）：顶部一条预算轨把 10k / 30k 两个阈值直接画成刻度——离警戒线还有多远是看得见的，不再是隐含规则；轨内按互不重叠的四项（指令链 / 技能目录 / 内置工具 schema / MCP 工具）着色分段。每项可展开到具体条目——指令链逐文件、技能按来源、工具按单个 schema、MCP 按服务器——直接回答「谁在占用」。面板文案跟随 DSH 的语言设置（中 / 英），正文沿用宿主 UI 字体、等宽只用于数字；点击面板外任意处或按 Esc 收起。面板自动跟随 DSH 的浅色、深色与系统主题，并会在窄视窗内滚动以保持完整可用。数据经 `GET /api/context-doctor/audit`（host 侧 60s 缓存）拉取。
 2. **`context_audit` 模型工具**：完整审计报告（含 rank shadow 冲突与按严重度排序的建议），模型可自主调用并执行建议。
 
 ### 审计内容

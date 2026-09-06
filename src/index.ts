@@ -5,7 +5,10 @@
  * - 浏览器半区（`./client`）：composer 圆环 + 展开面板（见 src/client/）
  */
 import type { Context } from '@deepseek-ai/cordis'
-import { defineTool, type JsonValue } from '@deepseek-ai/dsh-tools'
+import { defineTool } from '@deepseek-ai/dsh-tools'
+// `JsonValue` moved out of dsh-tools into dsh-util-values in DSH 0.1.2;
+// type-only, so it is erased at build time and needs no peer dependency.
+import type { JsonValue } from '@deepseek-ai/dsh-util-values'
 // Type-only side-effect imports: pull each package's `declare module '@deepseek-ai/cordis'`
 // Context augmentation (fs / skills / tools / webServer) into this compilation unit.
 import type {} from '@deepseek-ai/dsh-fs'
