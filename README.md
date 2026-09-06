@@ -12,7 +12,7 @@
 
 <p align="center">
   <a href="LICENSE"><img alt="License BSD-3-Clause" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg?style=for-the-badge"></a>
-  <a href="https://github.com/Zhenyu98/dsh-context-doctor/releases"><img alt="Version 0.6.2" src="https://img.shields.io/badge/Version-0.6.2-green.svg?style=for-the-badge"></a>
+  <a href="https://github.com/Zhenyu98/dsh-context-doctor/releases"><img alt="Version 0.7.0" src="https://img.shields.io/badge/Version-0.7.0-green.svg?style=for-the-badge"></a>
   <a href="https://github.com/deepseek-ai/awesome-deepseek-agent"><img alt="For DeepSeek Harness" src="https://img.shields.io/badge/For-DeepSeek%20Harness-8257D0.svg?style=for-the-badge"></a>
 </p>
 
@@ -88,7 +88,7 @@ dsh --profile web --dump-config | grep context-doctor
 
 ### 两种形态
 
-1. **Web UI `Context Doctor` 面板**（已有会话的发送按钮左侧，与内置计量条并列）：顶部一条预算轨把 10k / 30k 两个阈值直接画成刻度——离警戒线还有多远是看得见的，不再是隐含规则；轨内按互不重叠的四项（指令链 / 技能目录 / 内置工具 schema / MCP 工具）着色分段。每项可展开到具体条目——指令链逐文件、技能按来源、工具按单个 schema、MCP 按服务器——直接回答「谁在占用」。面板文案跟随 DSH 的语言设置（中 / 英），正文沿用宿主 UI 字体、等宽只用于数字；点击面板外任意处或按 Esc 收起。面板自动跟随 DSH 的浅色、深色与系统主题，并会在窄视窗内滚动以保持完整可用。数据经 `GET /api/context-doctor/audit`（host 侧 60s 缓存）拉取。
+1. **Web UI `Context Doctor` 面板**（已有会话的发送按钮左侧，与内置计量条并列；触发器是 30×30 的纯图标按钮，颜色即状态，名称在 tooltip 里）：顶部一条预算轨把 10k / 30k 两个阈值直接画成刻度——离警戒线还有多远是看得见的，不再是隐含规则；轨内按互不重叠的四项（指令链 / 技能目录 / 内置工具 schema / MCP 工具）着色分段。每项可展开到具体条目——指令链逐文件、技能按来源、工具按单个 schema、MCP 按服务器——直接回答「谁在占用」。面板文案跟随 DSH 的语言设置（中 / 英），正文沿用宿主 UI 字体、等宽只用于数字；点击面板外任意处或按 Esc 收起。面板自动跟随 DSH 的浅色、深色与系统主题，并会在窄视窗内滚动以保持完整可用。数据经 `GET /api/context-doctor/audit`（host 侧 60s 缓存）拉取。
 2. **`context_audit` 模型工具**：完整审计报告（含 rank shadow 冲突与按严重度排序的建议），模型可自主调用并执行建议。
 
 ### 审计内容
@@ -192,7 +192,7 @@ node --test 'tests/*.test.ts'  # node --test（Node ≥ 22.19，原生 TS 支持
 ./scripts/build.sh             # setup + tsc（lib/types）+ tsdown（lib/index.js + lib/client.js）
 ```
 
-测试 29 个用例：发布产物纯度守卫（宿主运行时必须外置，见 [#2](https://github.com/Zhenyu98/dsh-context-doctor/issues/2)）、token 估算、重复块/描述检测、rank shadow、MCP 分组、指令链端到端（真实临时文件系统 + fake FileSystem）、插件入口与完整 execute 报告链路、会话工作目录路由、HTTP 路由（方法检查 + 真实审计响应 + 缓存上限淘汰）、headless 无 httpServer 环境。
+测试 34 个用例：发布产物纯度守卫（宿主运行时必须外置，见 [#2](https://github.com/Zhenyu98/dsh-context-doctor/issues/2)）、token 估算、重复块/描述检测、rank shadow、MCP 分组、指令链端到端（真实临时文件系统 + fake FileSystem）、插件入口与完整 execute 报告链路、会话工作目录路由、HTTP 路由（方法检查 + 真实审计响应 + 缓存上限淘汰）、headless 无 httpServer 环境。
 
 ## 已知限制（v0.5）
 

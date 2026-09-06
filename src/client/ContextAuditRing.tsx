@@ -249,11 +249,18 @@ export function ContextAuditRing(props: ContextAuditRingProps): ReactElement {
   })()
 
   return <span ref={dockRef} data-context-doctor style={dockStyle}>
-    <button type="button" onClick={() => setOpen(value => !value)} title={t('cd.hint')} aria-label={t('cd.title')}
-      aria-expanded={open} aria-controls={panelId} style={triggerStyle}>
-      <span style={{ color: accent, display: 'inline-flex' }}><PulseIcon /></span>
-      <span style={triggerLabelStyle}>{t('cd.title')}</span>
-      <span aria-hidden="true" style={{ ...triggerDotStyle, background: accent }} />
+    {/*
+      Icon-only on purpose. A labelled pill cost ~150px of the composer tool
+      row, and stacked with other plugins' buttons plus a long model name it
+      pushed the row onto a second line (issues #6 / #7). The icon carries the
+      status in its colour, so a separate status dot would only repeat it; the
+      name lives in the tooltip and the accessible label.
+    */}
+    <button type="button" onClick={() => setOpen(value => !value)}
+      title={`${t('cd.title')} · ${status}`} aria-label={`${t('cd.title')} · ${status}`}
+      aria-expanded={open} aria-controls={panelId}
+      style={{ ...triggerStyle, color: accent }}>
+      <PulseIcon size={16} />
     </button>
 
     {open && <section id={panelId} role="dialog" aria-label={t('cd.title')} style={panelStyle}>
@@ -356,9 +363,7 @@ export function ContextAuditRing(props: ContextAuditRingProps): ReactElement {
 
 /* Text inherits the shell's UI font on purpose; only figures set MONO. */
 const dockStyle: CSSProperties = { display: 'inline-flex', alignItems: 'center', position: 'relative' }
-const triggerStyle: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 31, padding: '4px 9px', color: TONE.text, background: TONE.raised, border: `1px solid ${TONE.border}`, borderRadius: 7, cursor: 'pointer', font: 'inherit', fontSize: 12, fontWeight: 500 }
-const triggerLabelStyle: CSSProperties = { whiteSpace: 'nowrap' }
-const triggerDotStyle: CSSProperties = { width: 7, height: 7, marginLeft: 1, borderRadius: 99 }
+const triggerStyle: CSSProperties = { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, padding: 0, background: 'transparent', border: `1px solid ${TONE.border}`, borderRadius: 7, cursor: 'pointer', font: 'inherit' }
 
 const panelStyle: CSSProperties = { position: 'absolute', zIndex: 1000, right: 0, bottom: 'calc(100% + 12px)', width: 424, maxWidth: 'calc(100vw - 24px)', maxHeight: 'min(70vh, 620px)', overflowX: 'hidden', overflowY: 'auto', color: TONE.text, background: TONE.canvas, border: `1px solid ${TONE.borderStrong}`, borderRadius: 12, boxShadow: '0 2px 6px rgba(0, 0, 0, .18), 0 20px 46px rgba(0, 0, 0, .3)', textAlign: 'left' }
 
