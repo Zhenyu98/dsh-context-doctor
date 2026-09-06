@@ -143,14 +143,19 @@ test('插件端到端：execute 产出完整审计报告', async () => {
     assert.equal(report.receipt.shadowedSkills[0]!.name, 'shadowed-skill')
     assert.equal(report.receipt.trimmed.status, 'unavailable')
 
-    // render 输出可读文本
+    // render 输出可读文本。mock ctx 没有 settings 服务，语言回退英文——宿主的
+    // locale.preference 可缺省，缺省即「跟随浏览器」，而 host 看不见浏览器。
     const render = tool as unknown as { output: { render: Function } }
     const blocks = render.output.render(args, report as never)
     const text = (blocks[0] as { text: string }).text
-    assert.ok(text.includes('# Context Doctor 审计报告'))
-    assert.ok(text.includes('指令链'))
-    assert.ok(text.includes('建议'))
+    assert.ok(text.includes('# Context Doctor audit report'))
+    assert.ok(text.includes('Instruction chain'))
+    assert.ok(text.includes('Suggestions'))
     assert.ok(text.includes('Developer context-audit receipt'))
+
+    // 工具 schema 固定英文：给模型读的契约，不随宿主语言漂移（issue #11）。
+    const schema = tool as unknown as { description: string }
+    assert.ok(schema.description.startsWith('Audit what this session injects'))
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

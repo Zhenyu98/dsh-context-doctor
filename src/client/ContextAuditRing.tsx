@@ -190,7 +190,12 @@ export function ContextAuditRing(props: ContextAuditRingProps): ReactElement {
     controllerRef.current = controller
     actions.setState('loading', null)
     // `detail=developer` carries the per-entry receipt the breakdown lists.
-    const url = `${AUDIT_API}?session=${encodeURIComponent(sessionId)}&detail=developer`
+    // `lang` is sent explicitly because the host cannot resolve the panel's
+    // language on its own: the stored preference is optional and its absence
+    // means "follow the browser" (issue #11). The locale plugin keeps
+    // `<html lang>` on the active locale, so that is the reading to forward.
+    const lang = document.documentElement.lang.toLowerCase().startsWith('zh') ? 'zh' : 'en'
+    const url = `${AUDIT_API}?session=${encodeURIComponent(sessionId)}&detail=developer&lang=${lang}`
     void fetch(url, { signal: controller.signal }).then(response => {
       if (!response.ok) throw new Error(`audit ${response.status}`)
       return response.json() as Promise<{ ok: boolean; report: AuditUiState['report'] }>

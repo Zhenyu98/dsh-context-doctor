@@ -17,6 +17,9 @@ import type {} from '@deepseek-ai/dsh-tools'
 import type {} from '@deepseek-ai/dsh-host-webserver'
 import type {} from '@deepseek-ai/dsh-session'
 import { renderReport, runAudit, type AuditDeps, type AuditReport } from './audit.ts'
+import {
+  LOCALE_PREFERENCE_FIELD, LOCALE_SETTINGS_NAMESPACE, resolveHostLocale, type HostLocaleId,
+} from './locale.ts'
 import { makeAuditRoutes } from './routes.ts'
 
 export type { AuditReport } from './audit.ts'
@@ -36,33 +39,53 @@ export interface Config {
 export function apply(ctx: Context, config: Config = {}): void {
   const deps: AuditDeps = { fs: ctx.fs, skills: ctx.skills, tools: ctx.tools }
 
-  // 1. 模型工具
+  /**
+   * 报告语言（issue #11）。宿主把显式选择存在 settings 的 `locale.preference`，
+   * 但该字段可缺省，缺省即「跟随浏览器」——host 看不见浏览器，只能回退英文。
+   * 浏览器面板不受这个限制：它在请求里显式带上自己的语言（见 routes.ts）。
+   */
+  const reportLocale = (): HostLocaleId => {
+    const settings = ctx.get('settings') as
+      { get(ns: string): unknown } | undefined
+    const section = settings?.get(LOCALE_SETTINGS_NAMESPACE) as
+      Record<string, unknown> | undefined
+    return resolveHostLocale(section?.[LOCALE_PREFERENCE_FIELD])
+  }
+
+  // 1. 模型工具。
+  //
+  // description 与参数说明**固定英文**：它们是给模型读的 schema，不是给人读的
+  // 界面文案。DSH 自带工具（tool-skill、tool-fs-search 等）一律英文，而让 schema
+  // 随宿主语言变化只会让模型行为随设置漂移。给人读的报告在 output.render 里按
+  // 语言渲染。
   ctx.tools.register(defineTool({
     name: 'context_audit',
     description:
-      '审计当前会话的上下文注入物：AGENTS.md/CLAUDE.md 指令链、技能目录摘要（catalog）、工具 schema、MCP 工具。'
-      + '估算每项注入的 token 成本，检测跨文件重复段落、技能描述重复、同名技能 shadow、MCP 工具面膨胀，'
-      + '输出按严重度排序的裁剪建议。只读，不修改任何文件。',
+      'Audit what this session injects into every model request: the AGENTS.md / CLAUDE.md '
+      + 'instruction chain, the skills catalog, tool schemas, and MCP tools. Estimates the token '
+      + 'cost of each, detects blocks duplicated across files, skills sharing one description, '
+      + 'same-name skills shadowing each other, and MCP tool-surface bloat, then returns trimming '
+      + 'suggestions ordered by severity. Read-only: it never modifies a file.',
     parameters: {
-      cwd: { type: 'string', description: '审计起点目录；默认使用当前会话工作目录' },
+      cwd: { type: 'string', description: 'Directory to audit from. Defaults to the current session workspace.' },
       includeSkillBodies: {
         type: 'boolean',
-        description: '是否统计技能正文的总 token（需要逐个加载技能正文，较慢）；默认 false',
+        description: 'Also total the tokens of skill bodies. Loads each body, so it is slower. Defaults to false.',
       },
       maxSkillBodies: {
         type: 'number',
-        description: 'includeSkillBodies 时最多统计的技能个数；默认 20',
+        description: 'How many skill bodies to count when includeSkillBodies is set. Defaults to 20.',
       },
       detail: {
         type: 'string',
         enum: ['summary', 'developer'],
-        description: '输出层级：summary 为精简摘要；developer 额外附带可定位的 context-audit receipt',
+        description: 'Output level: "summary" for the digest, "developer" to also attach a per-entry context-audit receipt.',
       },
     },
     output: {
       schema: { type: 'object', additionalProperties: true },
       render: (_args, value: Record<string, JsonValue>) => [
-        { type: 'text', text: renderReport(value as unknown as AuditReport) },
+        { type: 'text', text: renderReport(value as unknown as AuditReport, reportLocale()) },
       ],
     },
     async execute(args, exec): Promise<Record<string, JsonValue>> {
@@ -76,6 +99,7 @@ export function apply(ctx: Context, config: Config = {}): void {
         ...(args.maxSkillBodies !== undefined ? { maxSkillBodies: args.maxSkillBodies } : {}),
         ...(args.detail === 'developer' ? { detail: 'developer' as const } : {}),
         ...(exec.agent !== undefined ? { agent: exec.agent } : {}),
+        locale: reportLocale(),
       })
       // AuditReport 结构保证值全部 JSON 安全；断言仅为满足 defineTool 的 JsonValue 签名。
       return report as unknown as Record<string, JsonValue>

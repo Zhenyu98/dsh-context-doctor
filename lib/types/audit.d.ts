@@ -4,6 +4,7 @@
 import type { FileSystem } from '@deepseek-ai/dsh-fs';
 import type { SkillRegistry } from '@deepseek-ai/dsh-skill';
 import type { ToolRuntime } from '@deepseek-ai/dsh-tools';
+import { type HostLocaleId } from './locale.ts';
 /** 审计报告（canonical JSON 值）。 */
 export interface AuditReport {
     tool: 'context_audit';
@@ -143,6 +144,11 @@ export interface AuditOptions {
     detail?: 'summary' | 'developer';
     /** 当前执行上下文（工具执行时传入 exec.agent，用于解析会话 cwd）。 */
     agent?: unknown;
+    /**
+     * 建议文案的语言（issue #11）。报告是给人读的，跟随宿主语言；工具 schema
+     * 是给模型读的，固定英文，不受此项影响。缺省为英文。
+     */
+    locale?: HostLocaleId;
 }
 /** 执行一次完整审计。 */
 export declare function runAudit(deps: AuditDeps, options: AuditOptions): Promise<AuditReport>;
@@ -200,10 +206,10 @@ interface SuggestionInput {
     }[];
 }
 /** 按严重度排序的裁剪建议。 */
-export declare function buildSuggestions(input: SuggestionInput): {
+export declare function buildSuggestions(input: SuggestionInput, locale?: HostLocaleId): {
     severity: 'high' | 'medium' | 'low';
     text: string;
 }[];
 /** 把 canonical 报告渲染成模型可读文本。 */
-export declare function renderReport(report: AuditReport): string;
+export declare function renderReport(report: AuditReport, locale?: HostLocaleId): string;
 export {};

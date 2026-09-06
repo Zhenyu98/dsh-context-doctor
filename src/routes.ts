@@ -6,6 +6,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
 import type { AuditDeps, AuditReport } from './audit.ts'
 import { runAudit } from './audit.ts'
+import { resolveHostLocale, type HostLocaleId } from './locale.ts'
 
 /** 浏览器侧 API 前缀。 */
 export const AUDIT_API_PREFIX = '/api/context-doctor'
@@ -80,10 +81,11 @@ export function makeAuditRoutes(config: AuditRoutesConfig): WebRoute[] {
     detail: 'summary' | 'developer',
     agent: object | undefined,
     sessionId: string,
+    locale: HostLocaleId,
   ): Promise<AuditReport> => {
-    // 缓存键要带上明细层级（两种报告结构不同）和会话（不同 agent 看到的技能层
-    // 不同，报告也就不同）。
-    const key = `${detail} ${sessionId} ${cwd}`
+    // 缓存键要带上明细层级（两种报告结构不同）、会话（不同 agent 看到的技能层
+    // 不同）和语言（建议文案随语言变化）。
+    const key = `${detail} ${locale} ${sessionId} ${cwd}`
     const hit = cache.get(key)
     if (hit !== undefined && Date.now() - hit.at < cacheTtlMs) return hit.promise
     if (cache.size >= MAX_CACHE_ENTRIES) {
@@ -93,6 +95,7 @@ export function makeAuditRoutes(config: AuditRoutesConfig): WebRoute[] {
     const promise = runAudit(deps, {
       cwd,
       detail,
+      locale,
       signal: new AbortController().signal,
       ...(agent !== undefined ? { agent } : {}),
     })
@@ -121,7 +124,10 @@ export function makeAuditRoutes(config: AuditRoutesConfig): WebRoute[] {
       // （技能目录会是空的），但其余各项照常统计。
       const sessionId = parseQueryParam(url, 'session') ?? ''
       const agent = sessionId === '' ? undefined : config.agents?.get(sessionId)
-      audit(cwd, detail, agent, sessionId).then(
+      // 面板显式带上自己的语言：宿主设置里的 locale.preference 可以缺省（缺省
+      // 即「跟随浏览器」），而 host 看不见浏览器（issue #11）。
+      const locale = resolveHostLocale(parseQueryParam(url, 'lang'))
+      audit(cwd, detail, agent, sessionId, locale).then(
         (report) => json(res, 200, { ok: true, report }),
         (error: unknown) => json(res, 500, {
           ok: false,
