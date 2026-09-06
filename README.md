@@ -11,6 +11,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/Zhenyu98/dsh-context-doctor/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/Zhenyu98/dsh-context-doctor?style=for-the-badge&color=eab308"></a>
   <a href="LICENSE"><img alt="License BSD-3-Clause" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg?style=for-the-badge"></a>
   <a href="https://github.com/Zhenyu98/dsh-context-doctor/releases"><img alt="Version 0.7.2" src="https://img.shields.io/badge/Version-0.7.2-green.svg?style=for-the-badge"></a>
   <a href="https://github.com/deepseek-ai/awesome-deepseek-agent"><img alt="For DeepSeek Harness" src="https://img.shields.io/badge/For-DeepSeek%20Harness-8257D0.svg?style=for-the-badge"></a>
@@ -27,11 +28,8 @@
 </p>
 
 <p align="center">
-  <img src="docs/assets/context-doctor-preview.png" alt="Context Doctor native composer panel preview" width="86%">
-</p>
-
-<p align="center">
-  <sub>Context Doctor renders in English with a restrained mono interface; the surrounding DSH shell follows its selected light, dark, or system theme.</sub>
+  <sub>面板文案跟随 DSH 的语言设置（简体中文 / English），并沿用宿主的浅色 / 深色 / 跟随系统主题。<br>
+  截图待更新至 v0.7 版式。</sub>
 </p>
 
 ## Why
@@ -69,7 +67,7 @@ dsh --profile web --dump-config | grep context-doctor
 #       name: 'dsh-context-doctor'
 ```
 
-重启后，在**已有会话**的发送按钮左侧出现 `Context Doctor` 控件，或模型调用 `context_audit` 返回分节报告，即安装成功。面板以英文呈现，并沿用 DSH 的浅色 / 深色 / 跟随系统主题；新会话尚未分配 `sessionId` 时不会显示会话级控件。
+重启后，在**已有会话**的发送按钮左侧出现 `Context Doctor` 控件，或模型调用 `context_audit` 返回分节报告，即安装成功。面板文案跟随 DSH 的语言设置，并沿用其浅色 / 深色 / 跟随系统主题；新会话尚未分配 `sessionId` 时不会显示会话级控件。
 
 ## Agent Setup
 
@@ -78,7 +76,7 @@ dsh --profile web --dump-config | grep context-doctor
 ```text
 请阅读 https://github.com/Zhenyu98/dsh-context-doctor/blob/main/agent-setup.md
 并按照步骤帮我安装和配置 Context Doctor（DSH 上下文注入审计插件）。
-目标：装好后我能在 dsh web 里看到圆环面板，并能让模型调用 context_audit。
+目标：装好后我能在 dsh web 里看到 Context Doctor 面板，并能让模型调用 context_audit。
 修改文件、使用凭据、发布或运行破坏性命令前，先给我看计划并征得同意。
 ```
 
@@ -158,7 +156,7 @@ context-doctor:
 
 ## FAQ
 
-**装了之后圆环没出现？**
+**装了之后控件没出现？**
 
 重启 `dsh web` 后进入已有会话的 composer；新会话在分配 `sessionId` 前不会显示会话级控件。仍没有则先确认 `dsh --profile web --dump-config` 含 context-doctor 条目，且浏览器半区构建产物存在（改过源码必须重新 `./scripts/build.sh`）。
 
@@ -194,12 +192,18 @@ node --test 'tests/*.test.ts'  # node --test（Node ≥ 22.19，原生 TS 支持
 
 测试 39 个用例：发布产物纯度守卫（宿主运行时必须外置，见 [#2](https://github.com/Zhenyu98/dsh-context-doctor/issues/2)）、token 估算、重复块/描述检测、rank shadow、MCP 分组、指令链端到端（真实临时文件系统 + fake FileSystem）、插件入口与完整 execute 报告链路、会话工作目录路由、HTTP 路由（方法检查 + 真实审计响应 + 缓存上限淘汰）、headless 无 httpServer 环境。
 
-## 已知限制（v0.5）
+## 已知限制
 
 - 控件与 DSH 内置的上下文计量条并列显示，不替代它——`conversation.input.right` 是 `kind: 'list'` 插槽，落座不挤占任何既有控件。
 - 指令链重复检测只做"完全相同的段落块"，不做语义相似度；跨文件引用同一事实的不同表述暂不识别。
 - MCP 工具 schema 按 `name + description` 估算，未计入 JSON Schema 参数细节。
 - 技能正文统计默认关闭（加载正文有成本），catalog 摘要成本始终统计。
+
+## Star History
+
+<a href="https://star-history.com/#Zhenyu98/dsh-context-doctor&Date">
+  <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Zhenyu98/dsh-context-doctor&amp;type=Date" width="70%">
+</a>
 
 ## Acknowledgements
 

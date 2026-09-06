@@ -26,37 +26,37 @@
     "noEmitOnError": true,
     "paths": {
       "@deepseek-ai/dsh-tools": [
-        "/home/zhenyu/.dsh/source/public-20260813T135316Z/packages/core/tools/lib/types/index.d.ts"
+        "/dsh-checkout/packages/core/tools/lib/types/index.d.ts"
       ],
       "@deepseek-ai/dsh-skill": [
-        "/home/zhenyu/.dsh/source/public-20260813T135316Z/packages/skill/skill/lib/types/index.d.ts"
+        "/dsh-checkout/packages/skill/skill/lib/types/index.d.ts"
       ],
       "@deepseek-ai/dsh-fs": [
-        "/home/zhenyu/.dsh/source/public-20260813T135316Z/packages/fs/fs/lib/types/index.d.ts"
+        "/dsh-checkout/packages/fs/fs/lib/types/index.d.ts"
       ],
       "@deepseek-ai/dsh-host-webserver": [
-        "/home/zhenyu/.dsh/source/public-20260813T135316Z/packages/host/webserver/lib/types/index.d.ts"
+        "/dsh-checkout/packages/host/webserver/lib/types/index.d.ts"
       ],
       "@deepseek-ai/dsh-util-values": [
-        "/home/zhenyu/.dsh/source/public-20260813T135316Z/packages/util/values/lib/types/index.d.ts"
+        "/dsh-checkout/packages/util/values/lib/types/index.d.ts"
       ],
       "@deepseek-ai/dsh-client-store": [
-        "/home/zhenyu/.dsh/source/public-20260813T135316Z/packages/client/store/lib/types/index.d.ts"
+        "/dsh-checkout/packages/client/store/lib/types/index.d.ts"
       ],
       "@deepseek-ai/dsh-client-ui-renderer/client": [
-        "/home/zhenyu/.dsh/source/public-20260813T135316Z/packages/client/ui-renderer/lib/types/client/index.d.ts"
+        "/dsh-checkout/packages/client/ui-renderer/lib/types/client/index.d.ts"
       ],
       "@deepseek-ai/dsh-client-ui-slots": [
-        "/home/zhenyu/.dsh/source/public-20260813T135316Z/packages/client/ui-slots/lib/types/index.d.ts"
+        "/dsh-checkout/packages/client/ui-slots/lib/types/index.d.ts"
       ],
       "@deepseek-ai/dsh-client-ui-conversation/client": [
-        "/home/zhenyu/.dsh/source/public-20260813T135316Z/packages/client/ui-conversation/lib/types/client/index.d.ts"
+        "/dsh-checkout/packages/client/ui-conversation/lib/types/client/index.d.ts"
       ],
       "react": [
-        "/home/zhenyu/.dsh/source/public-20260813T135316Z/node_modules/.pnpm/@types+react@18.3.31/node_modules/@types/react/index.d.ts"
+        "/dsh-checkout/node_modules/.pnpm/@types+react@18.3.31/node_modules/@types/react/index.d.ts"
       ],
       "react/jsx-runtime": [
-        "/home/zhenyu/.dsh/source/public-20260813T135316Z/node_modules/.pnpm/@types+react@18.3.31/node_modules/@types/react/jsx-runtime.d.ts"
+        "/dsh-checkout/node_modules/.pnpm/@types+react@18.3.31/node_modules/@types/react/jsx-runtime.d.ts"
       ]
     }
   },

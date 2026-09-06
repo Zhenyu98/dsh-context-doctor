@@ -1,13 +1,13 @@
 # Agent Setup — Context Doctor
 
-DSH 上下文注入审计插件：安装后，模型可调用 `context_audit` 工具查看上下文注入物的 token 成本与裁剪建议，Web UI 的 composer 旁出现圆环面板。
+DSH 上下文注入审计插件：安装后，模型可调用 `context_audit` 工具查看上下文注入物的 token 成本与裁剪建议，Web UI 的 composer 工具行出现 Context Doctor 控件。
 
 ## Copy-Paste Prompt
 
 ```text
 请阅读 https://github.com/Zhenyu98/dsh-context-doctor/blob/main/agent-setup.md
 并按照步骤帮我安装和配置 Context Doctor（DSH 上下文注入审计插件）。
-目标：装好后我能在 dsh web 里看到圆环面板，并能让模型调用 context_audit。
+目标：装好后我能在 dsh web 里看到 Context Doctor 面板，并能让模型调用 context_audit。
 修改文件、使用凭据、发布或运行破坏性命令前，先给我看计划并征得同意。
 默认只运行非破坏性检查，完成后报告：改动了哪些文件、运行了哪些命令、验证结果。
 ```
@@ -31,13 +31,13 @@ DSH 上下文注入审计插件：安装后，模型可调用 `context_audit` �
    dsh --profile web --dump-config | grep context-doctor
    ```
 
-3. **重启 dsh web**，在新会话中让模型调用 `context_audit`，或查看 composer 旁的圆环面板。
+3. **重启 dsh web**，在新会话中让模型调用 `context_audit`，或点开 composer 工具行里的 Context Doctor 控件。
 
 ## Success Signal
 
 - `dsh --profile web --dump-config | grep context-doctor` 输出含 `- id: context-doctor` 与 `name: 'dsh-context-doctor'` 的 insert 条目
 - 新会话中 `context_audit` 返回分节报告（指令链 / 技能 / 工具 / 冲突 / 建议）
-- composer 发送框旁出现圆环（绿 / 黄 / 红按注入量分级）
+- composer 发送按钮左侧出现 Context Doctor 图标按钮（图标颜色按注入量分级：绿 / 黄 / 红）
 - headless / CLI 环境（无 Web）同样可用：`dsh --profile headless --patch <含插件的 patch> "调用 context_audit"` 可得到报告
 
 ## Safety Rules
@@ -51,6 +51,6 @@ DSH 上下文注入审计插件：安装后，模型可调用 `context_audit` �
 
 **`dsh plugin` 报 pnpm 找不到**：确认 pnpm 在 PATH；安装是显式包管理操作，需要 pnpm。
 
-**圆环没出现**：确认已重启 `dsh web`（浏览器半区产物在启动时校验）；若改过插件源码，需重新 `./scripts/build.sh` 再重启。
+**控件没出现**：确认已重启 `dsh web`（浏览器半区产物在启动时校验）；若改过插件源码，需重新 `./scripts/build.sh` 再重启。
 
 **报告 token 数与计量条不一致**：token 为启发式估算（ASCII ≈ 4 字符/token，中文 ≈ 1.5 字符/token），用于相对比较，精确值以模型 tokenizer 为准。

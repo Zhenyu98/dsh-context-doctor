@@ -11,6 +11,10 @@
  *    react、@types 等）；
  * 3. 把 tsconfig.json 的 compilerOptions.paths 前缀重写为 checkout 路径。
  *
+ * 注意第 3 步会改写被 git 跟踪的 tsconfig.json。仓库里提交的是中性占位
+ * `/dsh-checkout/...`（不能提交本机绝对路径：既泄露用户名和目录结构，别人
+ * clone 下来也是死路径）。提交前先 `git checkout tsconfig.json` 还原占位。
+ *
  * 用法：node scripts/setup-dsh-deps.mjs [--checkout <path>]
  * 之后即可 `node <checkout>/node_modules/.bin/tsc -p tsconfig.json` 或
  * `pnpm run build`（需要 DSH 检出的 tsc/tsdown 在 PATH 可解析）。
