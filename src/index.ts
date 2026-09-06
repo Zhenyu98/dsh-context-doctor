@@ -23,7 +23,6 @@ import {
 import { makeAuditRoutes } from './routes.ts'
 
 export type { AuditReport } from './audit.ts'
-export { buildSuggestions, rankOfSource, renderReport } from './audit.ts'
 
 export const name = 'context-doctor'
 export const inject = ['fs', 'skills', 'tools', 'sessions'] as const

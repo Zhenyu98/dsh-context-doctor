@@ -6,7 +6,6 @@
  */
 import type { Context } from '@deepseek-ai/cordis';
 export type { AuditReport } from './audit.ts';
-export { buildSuggestions, rankOfSource, renderReport } from './audit.ts';
 export declare const name = "context-doctor";
 export declare const inject: readonly ["fs", "skills", "tools", "sessions"];
 /** 插件配置。 */

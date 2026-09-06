@@ -21,6 +21,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type { AuditReport } from '../audit.ts'
 import type { AuditUiState } from './store.ts'
 import type { createAuditStore } from './store.ts'
+import { formatTokens } from '../tokens.ts'
 import { NS } from './locales.ts'
 
 export type ContextAuditRingProps =
@@ -63,13 +64,6 @@ interface Segment {
   tokens: number
   color: string
   detail: { title: string; rows: { name: string; tokens: number }[]; note?: string } | null
-}
-
-function formatK(tokens: number): string {
-  if (tokens < 1000) return String(tokens)
-  const value = tokens / 1000
-  if (value >= 100 || Number.isInteger(value)) return `${Math.round(value)}k`
-  return `${value.toFixed(1)}k`
 }
 
 /** Trailing path segment; the full path stays in the row's `title`. */
@@ -283,12 +277,12 @@ export function ContextAuditRing(props: ContextAuditRingProps): ReactElement {
         : report !== null && <>
           <div style={gaugeStyle}>
             <div style={readStyle}>
-              <strong style={readValueStyle}>{formatK(resident)}</strong>
+              <strong style={readValueStyle}>{formatTokens(resident)}</strong>
               <span style={readUnitStyle}>{t('cd.residentUnit')}</span>
-              <span style={readPercentStyle}>{Math.round(percent * 100)}% / {formatK(FULL_SCALE)}</span>
+              <span style={readPercentStyle}>{Math.round(percent * 100)}% / {formatTokens(FULL_SCALE)}</span>
             </div>
             <div style={railStyle} role="img"
-              aria-label={`${formatK(resident)} / ${formatK(FULL_SCALE)}`}>
+              aria-label={`${formatTokens(resident)} / ${formatTokens(FULL_SCALE)}`}>
               <span style={railTrackStyle}>
                 {segments.filter(segment => segment.tokens > 0).map(segment =>
                   <span key={segment.key} style={{
@@ -299,7 +293,7 @@ export function ContextAuditRing(props: ContextAuditRingProps): ReactElement {
               </span>
               {THRESHOLDS.map(threshold => <span key={threshold} aria-hidden="true"
                 style={{ ...tickStyle, left: `${(threshold / FULL_SCALE) * 100}%` }}>
-                <span style={tickLabelStyle}>{formatK(threshold)}</span>
+                <span style={tickLabelStyle}>{formatTokens(threshold)}</span>
               </span>)}
             </div>
           </div>
@@ -323,7 +317,7 @@ export function ContextAuditRing(props: ContextAuditRingProps): ReactElement {
                     <span style={{ ...rowLabelStyle, color: canExpand ? TONE.text : TONE.muted }}>{segment.label}</span>
                     <span style={rowSubStyle}>{segment.sub}</span>
                   </span>
-                  <span style={rowValueStyle}>{formatK(segment.tokens)}</span>
+                  <span style={rowValueStyle}>{formatTokens(segment.tokens)}</span>
                   <span style={rowShareStyle}>{Math.round(share * 100)}%</span>
                 </button>
 
@@ -332,7 +326,7 @@ export function ContextAuditRing(props: ContextAuditRingProps): ReactElement {
                   {segment.detail.rows.slice(0, DETAIL_LIMIT).map(row =>
                     <span key={row.name} style={detailRowStyle} title={row.name}>
                       <span style={detailNameStyle}>{row.name}</span>
-                      <span style={detailValueStyle}>{formatK(row.tokens)}</span>
+                      <span style={detailValueStyle}>{formatTokens(row.tokens)}</span>
                     </span>)}
                   {segment.detail.rows.length > DETAIL_LIMIT
                     && <span style={detailMoreStyle}>{t('cd.more', { n: segment.detail.rows.length - DETAIL_LIMIT })}</span>}

@@ -22,38 +22,30 @@ import { execFileSync } from 'node:child_process'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
-/** 依赖名 → checkout 内相对路径。 */
-const LINKS = {  'node_modules/@deepseek-ai/cordis': 'vendor/cordis',
-  'node_modules/schemastery': 'vendor/schemastery',
-  'node_modules/cosmokit': 'vendor/cosmokit',
+/**
+ * 依赖名 → checkout 内相对路径。
+ *
+ * 只列源码或 tsconfig 里真正出现过的包。这里曾经堆着十几条从没被引用的链接
+ * （dsh-agent / dsh-llm / dsh-sandbox / dsh-code-runtime …），既拖慢首次 setup
+ * 也让人以为插件依赖它们。加链接前先确认 src 或 tsconfig.paths 里确有引用。
+ */
+const LINKS = {
+  'node_modules/@deepseek-ai/cordis': 'vendor/cordis',
   'node_modules/react': 'node_modules/.pnpm/react@18.3.1/node_modules/react',
-  'node_modules/lightningcss': 'node_modules/lightningcss',
   'node_modules/tsdown': 'node_modules/tsdown',
   'node_modules/@types': 'node_modules/@types',
-  'node_modules/@deepseek-ai/dsh-agent': 'packages/core/agent',
-  'node_modules/@deepseek-ai/dsh-brand': 'packages/util/brand',
   'node_modules/@deepseek-ai/dsh-tools': 'packages/core/tools',
   // 0.1.2 起 JsonValue 从 dsh-tools 移出到这里（仅类型引用）。
   'node_modules/@deepseek-ai/dsh-util-values': 'packages/util/values',
   'node_modules/@deepseek-ai/dsh-fs': 'packages/fs/fs',
   'node_modules/@deepseek-ai/dsh-skill': 'packages/skill/skill',
+  'node_modules/@deepseek-ai/dsh-session': 'packages/core/session',
   'node_modules/@deepseek-ai/dsh-host-webserver': 'packages/host/webserver',
   'node_modules/@deepseek-ai/dsh-client-store': 'packages/client/store',
-  'node_modules/@deepseek-ai/dsh-client-modules': 'packages/client/modules',
   'node_modules/@deepseek-ai/dsh-client-ui-slots': 'packages/client/ui-slots',
   'node_modules/@deepseek-ai/dsh-client-ui-renderer': 'packages/client/ui-renderer',
   'node_modules/@deepseek-ai/dsh-client-ui-conversation': 'packages/client/ui-conversation',
   'node_modules/@deepseek-ai/dsh-client-locale': 'packages/client/locale',
-  'node_modules/@deepseek-ai/dsh-client-connection': 'packages/client/connection',
-  'node_modules/@deepseek-ai/dsh-llm': 'packages/llm/llm',
-  'node_modules/@deepseek-ai/dsh-session': 'packages/core/session',
-  'node_modules/@deepseek-ai/dsh-scope': 'packages/core/scope',
-  'node_modules/@deepseek-ai/dsh-code-runtime': 'packages/code-runtime/code-runtime',
-  'node_modules/@deepseek-ai/dsh-sandbox': 'packages/sandbox/sandbox',
-  'node_modules/@deepseek-ai/dsh-invariants': 'packages/runtime-diagnostics/invariants',
-  'node_modules/@deepseek-ai/dsh-system-prompt': 'packages/core/system-prompt',
-  'node_modules/@deepseek-ai/dsh-timeout': 'packages/util/timeout',
-  'node_modules/@deepseek-ai/dsh-user-approval': 'packages/interaction/user-approval',
 }
 
 /** 常见 DSH 源码检出位置（dsh 不在 PATH 时的兜底）。 */

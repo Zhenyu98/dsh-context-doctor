@@ -16,13 +16,17 @@ export function estimateTokens(text: string): number {
   return Math.ceil(ascii / 4 + nonAscii / 1.5)
 }
 
-/** 把 token 数格式化为人类可读：1234 -> "1.2k" */
+/**
+ * 把 token 数格式化为人类可读：1234 -> "1.2k"，50000 -> "50k"。
+ *
+ * 浏览器半区也直接引这个函数——本模块无 node 依赖，纯字符串运算。面板此前
+ * 自带过一份副本，两份漂移后同一个数字在报告里显示 "50.0k"、在面板里 "50k"。
+ */
 export function formatTokens(n: number): string {
-  if (n >= 1000) {
-    const k = n / 1000
-    return `${k >= 100 ? Math.round(k) : k.toFixed(1)}k`
-  }
-  return String(n)
+  if (n < 1000) return String(n)
+  const k = n / 1000
+  if (k >= 100 || Number.isInteger(k)) return `${Math.round(k)}k`
+  return `${k.toFixed(1)}k`
 }
 
 /** 把字节数格式化为人类可读。 */

@@ -27,7 +27,11 @@ test('estimateTokens: 空文本为 0', () => {
 test('formatTokens: 千分位缩写', () => {
   assert.equal(formatTokens(1234), '1.2k')
   assert.equal(formatTokens(999), '999')
-  assert.equal(formatTokens(12000), '12.0k')
+  // 整千不带无意义的 .0。面板与报告此前各有一份实现，正是在这里漂移的：
+  // 同一个 50000，报告显示 "50.0k"、面板显示 "50k"。
+  assert.equal(formatTokens(12000), '12k')
+  assert.equal(formatTokens(50000), '50k')
+  assert.equal(formatTokens(123456), '123k')
 })
 
 test('formatBytes: 单位换算', () => {
